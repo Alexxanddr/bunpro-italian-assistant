@@ -542,8 +542,8 @@
     let intact = markerCount > 0;
     for (let index = 0; index < markerCount; index += 1) {
       const marker = idToLetters(index);
-      const open = new RegExp(`\\s*\\[\\[BIA${marker}\\]\\]\\s*`, "i");
-      const close = new RegExp(`\\s*\\[\\[/BIA${marker}\\]\\]\\s*`, "i");
+      const open = new RegExp(`\\[\\[BIA${marker}\\]\\]`, "i");
+      const close = new RegExp(`\\[\\[/BIA${marker}\\]\\]`, "i");
       if (!open.test(html) || !close.test(html)) intact = false;
       html = html.replace(open, "<strong>").replace(close, "</strong>");
     }

@@ -4,6 +4,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e il p
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-09-29
+
+### Fixed
+
+- Gli spazi attorno alle parole evidenziate nelle frasi Review vengono preservati.
+
 ## [1.1.0] - 2026-09-29
 
 ### Changed
