@@ -4,6 +4,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e il p
 
 ## [Unreleased]
 
+## [1.1.4] - 2026-09-29
+
+### Fixed
+
+- Le parole previste nelle frasi Review restano evidenziate in rosso anche dopo la traduzione con MyMemory.
+
 ## [1.1.3] - 2026-09-29
 
 ### Fixed

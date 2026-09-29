@@ -528,9 +528,9 @@
       if (node.classList.contains("bia-original-tooltip")) return;
       if (node.tagName === "STRONG" || node.tagName === "B") {
         const marker = idToLetters(markerCount++);
-        output += ` [[BIA${marker}]] `;
+        output += `<x${marker}>`;
         [...node.childNodes].forEach(walk);
-        output += ` [[/BIA${marker}]] `;
+        output += `</x${marker}>`;
       } else {
         [...node.childNodes].forEach(walk);
       }
@@ -549,16 +549,24 @@
   }
 
   function renderMarkedTranslation(text, markerCount) {
-    let html = escapeHtml(text);
     let intact = markerCount > 0;
     for (let index = 0; index < markerCount; index += 1) {
       const marker = idToLetters(index);
-      const open = new RegExp(`\\[\\[BIA${marker}\\]\\]`, "i");
-      const close = new RegExp(`\\[\\[/BIA${marker}\\]\\]`, "i");
-      if (!open.test(html) || !close.test(html)) intact = false;
-      html = html.replace(open, "<strong>").replace(close, "</strong>");
+      const open = new RegExp(`<x${marker}>`, "i");
+      const close = new RegExp(`</x${marker}>`, "i");
+      if (!open.test(text) || !close.test(text)) intact = false;
     }
-    return intact ? html : escapeHtml(text.replace(/\s*\[\[\/?BIA[A-Z]+\]\]\s*/gi, " "));
+    if (!intact) return escapeHtml(text.replace(/<\/?x[A-Z]+>/gi, ""));
+
+    let html = "";
+    let offset = 0;
+    const markerPattern = /<x([A-Z]+)>|<\/x([A-Z]+)>/gi;
+    for (const match of text.matchAll(markerPattern)) {
+      html += escapeHtml(text.slice(offset, match.index));
+      html += match[1] ? "<strong>" : "</strong>";
+      offset = match.index + match[0].length;
+    }
+    return html + escapeHtml(text.slice(offset));
   }
 
   function restoreReviewHover(element, state) {
