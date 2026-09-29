@@ -4,6 +4,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e il p
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-09-29
+
+### Fixed
+
+- I messaggi di successo Learn spariscono automaticamente e non restano visibili nelle pagine Review.
+
 ## [1.1.1] - 2026-09-29
 
 ### Fixed

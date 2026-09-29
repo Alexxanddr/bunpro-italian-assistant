@@ -27,6 +27,7 @@
   let candidateSince = 0;
   let observerTimer;
   let reviewTimer;
+  let statusTimer;
   let sharedTranslatorPromise;
   let translationQueue = Promise.resolve();
 
@@ -58,6 +59,7 @@
   }
 
   function setStatus(message, state = "working") {
+    clearTimeout(statusTimer);
     let status = document.getElementById(STATUS_ID);
     if (!status) {
       status = document.createElement("div");
@@ -66,6 +68,15 @@
     }
     status.dataset.state = state;
     status.textContent = message;
+    if (state === "success") {
+      statusTimer = setTimeout(() => status.remove(), 3500);
+    }
+  }
+
+  function clearLearnStatusOnReview() {
+    if (!location.pathname.startsWith("/reviews")) return;
+    clearTimeout(statusTimer);
+    document.getElementById(STATUS_ID)?.remove();
   }
 
   async function createTranslator() {
@@ -603,9 +614,11 @@
   }
 
   if (location.pathname.startsWith("/reviews")) {
+    clearLearnStatusOnReview();
     document.querySelectorAll(REVIEW_SELECTOR).forEach(queueReviewElement);
   }
   new MutationObserver((mutations) => {
+    clearLearnStatusOnReview();
     scheduleLearn();
     for (const mutation of mutations) {
       scanReviewNode(mutation.target);
