@@ -561,12 +561,26 @@
     return intact ? html : escapeHtml(text.replace(/\s*\[\[\/?BIA[A-Z]+\]\]\s*/gi, " "));
   }
 
+  function restoreReviewHover(element, state) {
+    if (!state.original) return;
+    if (element.dataset.biaOriginal !== state.original) element.dataset.biaOriginal = state.original;
+    if (element.title !== state.original) element.title = state.original;
+    if (!element.classList.contains("bia-translated-review")) {
+      element.classList.add("bia-translated-review");
+    }
+  }
+
   async function translateReviewElement(element) {
     if (!element.isConnected || !isVisible(element)) return;
     const state = reviewState.get(element) || { version: 0, translated: "" };
     reviewState.set(element, state);
     const visibleText = normalize(element.innerText);
-    if (!visibleText || visibleText === state.translated || !/[A-Za-z]/.test(visibleText)) return;
+    if (!visibleText) return;
+    if (visibleText === state.translated) {
+      restoreReviewHover(element, state);
+      return;
+    }
+    if (!/[A-Za-z]/.test(visibleText)) return;
 
     const { text: source, markerCount } = buildMarkedSource(element);
     if (!source || source === state.source) return;
@@ -578,9 +592,8 @@
       if (!element.isConnected || state.version !== version || normalize(element.innerText) !== visibleText) return;
       element.innerHTML = renderMarkedTranslation(translated, markerCount);
       state.translated = normalize(element.innerText);
-      element.dataset.biaOriginal = visibleText;
-      element.title = visibleText;
-      element.classList.add("bia-translated-review");
+      state.original = visibleText;
+      restoreReviewHover(element, state);
     } catch (error) {
       console.error("[Bunpro Italian Assistant: Review]", error);
       state.source = "";
@@ -625,6 +638,8 @@
       mutation.addedNodes.forEach(scanReviewNode);
     }
   }).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class", "title", "data-bia-original"],
     childList: true,
     subtree: true,
     characterData: true

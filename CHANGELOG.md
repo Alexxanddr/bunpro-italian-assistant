@@ -4,6 +4,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e il p
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-09-29
+
+### Fixed
+
+- L'hover con la frase originale viene ripristinato quando Bunpro riutilizza il contenitore nelle Review successive.
+
 ## [1.1.2] - 2026-09-29
 
 ### Fixed
