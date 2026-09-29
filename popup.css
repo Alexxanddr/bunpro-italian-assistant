@@ -1,0 +1,29 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  width: 19rem;
+  margin: 0;
+  padding: 1rem;
+}
+
+h1 {
+  margin: 0 0 0.85rem;
+  font-size: 1.05rem;
+}
+
+label {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  margin: 0.65rem 0;
+}
+
+p {
+  margin: 0.9rem 0 0;
+  color: #6b7280;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}

@@ -1,0 +1,61 @@
+#bia-status {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2147483646;
+  max-width: min(28rem, calc(100vw - 2rem));
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #93c5fd;
+  border-radius: 0.55rem;
+  background: #eff6ff;
+  color: #1e3a5f;
+  box-shadow: 0 0.3rem 1rem rgb(0 0 0 / 18%);
+  font: 500 0.88rem/1.35 system-ui, sans-serif;
+}
+
+#bia-status[data-state="success"] {
+  border-color: #86efac;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+#bia-status[data-state="error"] {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.bia-translated-review {
+  position: relative;
+  cursor: help;
+  text-decoration: underline dotted rgb(99 102 241 / 55%);
+  text-underline-offset: 0.2em;
+}
+
+.bia-translated-review::after {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.65rem);
+  z-index: 2147483647;
+  width: max-content;
+  max-width: min(36rem, 85vw);
+  padding: 0.65rem 0.8rem;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 0.5rem;
+  background: #111827;
+  color: #f9fafb;
+  box-shadow: 0 0.45rem 1.4rem rgb(0 0 0 / 28%);
+  content: "Originale: " attr(data-bia-original);
+  font: 500 0.88rem/1.4 system-ui, sans-serif;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 0.3rem);
+  transition: opacity 120ms ease, transform 120ms ease;
+  white-space: normal;
+}
+
+.bia-translated-review:hover::after,
+.bia-translated-review:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
