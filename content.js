@@ -519,6 +519,7 @@
   function buildMarkedSource(element) {
     let output = "";
     let markerCount = 0;
+    const highlights = [];
     const walk = (node) => {
       if (node.nodeType === Node.TEXT_NODE) {
         output += node.nodeValue;
@@ -528,6 +529,7 @@
       if (node.classList.contains("bia-original-tooltip")) return;
       if (node.tagName === "STRONG" || node.tagName === "B") {
         const marker = idToLetters(markerCount++);
+        highlights.push(normalize(node.textContent));
         output += `<x${marker}>`;
         [...node.childNodes].forEach(walk);
         output += `</x${marker}>`;
@@ -536,7 +538,7 @@
       }
     };
     walk(element);
-    return { text: normalize(output), markerCount };
+    return { text: normalize(output), markerCount, highlights };
   }
 
   function escapeHtml(value) {
@@ -548,16 +550,18 @@
       .replace(/'/g, "&#39;");
   }
 
-  function renderMarkedTranslation(text, markerCount) {
-    let intact = markerCount > 0;
+  function hasIntactReviewMarkers(text, markerCount) {
+    if (markerCount === 0) return false;
     for (let index = 0; index < markerCount; index += 1) {
       const marker = idToLetters(index);
       const open = new RegExp(`<x${marker}>`, "i");
       const close = new RegExp(`</x${marker}>`, "i");
-      if (!open.test(text) || !close.test(text)) intact = false;
+      if (!open.test(text) || !close.test(text)) return false;
     }
-    if (!intact) return escapeHtml(text.replace(/<\/?x[A-Z]+>/gi, ""));
+    return true;
+  }
 
+  function renderMarkedTranslation(text) {
     let html = "";
     let offset = 0;
     const markerPattern = /<x([A-Z]+)>|<\/x([A-Z]+)>/gi;
@@ -567,6 +571,53 @@
       offset = match.index + match[0].length;
     }
     return html + escapeHtml(text.slice(offset));
+  }
+
+  function findHighlightRange(text, translatedHighlight, occupiedRanges) {
+    const lowerText = text.toLocaleLowerCase("it");
+    const cleanedHighlight = normalize(translatedHighlight).replace(/^[\s.,;:!?]+|[\s.,;:!?]+$/g, "");
+    const candidates = [cleanedHighlight, ...cleanedHighlight.split(/[^\p{L}\p{N}'’-]+/u)]
+      .map((candidate) => candidate.replace(/^[’']+|[’']+$/g, ""))
+      .filter((candidate) => candidate.length >= 3)
+      .sort((left, right) => right.length - left.length);
+
+    for (const candidate of [...new Set(candidates)]) {
+      const lowerCandidate = candidate.toLocaleLowerCase("it");
+      let start = lowerText.indexOf(lowerCandidate);
+      while (start !== -1) {
+        const end = start + candidate.length;
+        if (!occupiedRanges.some((range) => start < range.end && end > range.start)) {
+          return { start, end };
+        }
+        start = lowerText.indexOf(lowerCandidate, start + 1);
+      }
+    }
+    return null;
+  }
+
+  async function renderReviewTranslation(text, markerCount, highlights) {
+    if (hasIntactReviewMarkers(text, markerCount)) return renderMarkedTranslation(text);
+
+    const plainText = normalize(text.replace(/<\/?x[A-Z]+>/gi, ""));
+    if (!highlights.length) return escapeHtml(plainText);
+
+    const translatedHighlights = await Promise.all(highlights.map(translateReviewText));
+    const ranges = [];
+    for (const translatedHighlight of translatedHighlights) {
+      const range = findHighlightRange(plainText, translatedHighlight, ranges);
+      if (range) ranges.push(range);
+    }
+    ranges.sort((left, right) => left.start - right.start);
+    if (!ranges.length) return escapeHtml(plainText);
+
+    let html = "";
+    let offset = 0;
+    for (const range of ranges) {
+      html += escapeHtml(plainText.slice(offset, range.start));
+      html += `<strong>${escapeHtml(plainText.slice(range.start, range.end))}</strong>`;
+      offset = range.end;
+    }
+    return html + escapeHtml(plainText.slice(offset));
   }
 
   function restoreReviewHover(element, state) {
@@ -590,7 +641,7 @@
     }
     if (!/[A-Za-z]/.test(visibleText)) return;
 
-    const { text: source, markerCount } = buildMarkedSource(element);
+    const { text: source, markerCount, highlights } = buildMarkedSource(element);
     if (!source || source === state.source) return;
     state.source = source;
     const version = ++state.version;
@@ -598,7 +649,9 @@
     try {
       const translated = await translateReviewText(source);
       if (!element.isConnected || state.version !== version || normalize(element.innerText) !== visibleText) return;
-      element.innerHTML = renderMarkedTranslation(translated, markerCount);
+      const translatedHtml = await renderReviewTranslation(translated, markerCount, highlights);
+      if (!element.isConnected || state.version !== version || normalize(element.innerText) !== visibleText) return;
+      element.innerHTML = translatedHtml;
       state.translated = normalize(element.innerText);
       state.original = visibleText;
       restoreReviewHover(element, state);

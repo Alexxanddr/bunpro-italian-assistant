@@ -4,6 +4,12 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e il p
 
 ## [Unreleased]
 
+## [1.1.5] - 2026-09-29
+
+### Fixed
+
+- Se MyMemory elimina i marcatori dalla frase, l'estensione traduce separatamente il testo previsto e ricostruisce automaticamente l'evidenziazione rossa.
+
 ## [1.1.4] - 2026-09-29
 
 ### Fixed
