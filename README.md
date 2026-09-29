@@ -1,6 +1,6 @@
 # Bunpro Italian Assistant
 
-Estensione Chrome per studiare Bunpro in italiano. Unisce in un solo progetto le traduzioni delle schermate **Learn** e **Review**, senza servizi o chiavi API esterni.
+Estensione Chrome per studiare Bunpro in italiano. Unisce in un solo progetto le traduzioni delle schermate **Learn** e **Review**, senza chiavi API o servizi a pagamento.
 
 ## Funzionalità
 
@@ -22,11 +22,13 @@ Estensione Chrome per studiare Bunpro in italiano. Unisce in un solo progetto le
 
 ## Traduzione e privacy
 
-La traduzione usa la [Translator API integrata in Chrome](https://developer.chrome.com/docs/ai/translator-api). Il testo viene elaborato localmente: non servono account aggiuntivi, chiavi API o servizi a pagamento.
+In **Learn**, la traduzione usa la [Translator API integrata in Chrome](https://developer.chrome.com/docs/ai/translator-api) e il testo viene elaborato localmente.
+
+In **Review**, la frase inglese viene inviata al servizio gratuito [MyMemory](https://mymemory.translated.net/doc/spec.php) per ottenere la traduzione italiana. Non servono account o chiavi API.
 
 L'estensione:
 
-- funziona soltanto su `bunpro.jp`;
+- funziona sulle pagine `bunpro.jp` e contatta `api.mymemory.translated.net` soltanto per tradurre le frasi Review;
 - non raccoglie dati e non usa analytics;
 - salva in `chrome.storage.sync` soltanto gli interruttori del popup;
 - modifica note e sinonimi esclusivamente tramite l'interfaccia Bunpro.

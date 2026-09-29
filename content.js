@@ -11,10 +11,14 @@
   const STATUS_ID = "bia-status";
   const STABLE_FOR_MS = 700;
   const TRANSLATION_TIMEOUT_MS = 20000;
+  const REVIEW_TRANSLATION_ENDPOINT = "https://api.mymemory.translated.net/get";
+  const REVIEW_REQUEST_TIMEOUT_MS = 10000;
+  const REVIEW_MAX_ATTEMPTS = 3;
   const MAX_SUMMARY_LENGTH = 3500;
   const INVALID_MEANINGS = new Set(["grammar", "vocab", "details", "summary"]);
 
   const translationCache = new Map();
+  const reviewTranslationCache = new Map();
   const reviewState = new WeakMap();
   const pendingReviewElements = new Set();
   let learnRunning = false;
@@ -130,6 +134,63 @@
     });
     translationQueue = request;
     translationCache.set(source, request);
+    return request;
+  }
+
+  function decodeHtmlEntities(value) {
+    const textarea = document.createElement("textarea");
+    textarea.innerHTML = value;
+    return textarea.value;
+  }
+
+  async function requestReviewTranslation(text) {
+    let lastError;
+
+    for (let attempt = 1; attempt <= REVIEW_MAX_ATTEMPTS; attempt += 1) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), REVIEW_REQUEST_TIMEOUT_MS);
+
+      try {
+        const url = new URL(REVIEW_TRANSLATION_ENDPOINT);
+        url.searchParams.set("q", text);
+        url.searchParams.set("langpair", "en|it");
+
+        const response = await fetch(url, {
+          credentials: "omit",
+          signal: controller.signal
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+        const translatedText = data?.responseData?.translatedText;
+        if (Number(data?.responseStatus) !== 200 || typeof translatedText !== "string") {
+          throw new Error(data?.responseDetails || "Risposta del servizio di traduzione non valida");
+        }
+
+        const translation = normalize(decodeHtmlEntities(translatedText));
+        if (!translation) throw new Error("Il servizio di traduzione ha restituito un testo vuoto");
+        return translation;
+      } catch (error) {
+        lastError = error;
+        if (attempt < REVIEW_MAX_ATTEMPTS) await sleep(attempt * 500);
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    throw lastError;
+  }
+
+  function translateReviewText(text) {
+    const source = normalize(text);
+    if (!source) return Promise.resolve("");
+    if (reviewTranslationCache.has(source)) return reviewTranslationCache.get(source);
+
+    const request = requestReviewTranslation(source).catch((error) => {
+      if (reviewTranslationCache.get(source) === request) reviewTranslationCache.delete(source);
+      throw error;
+    });
+    reviewTranslationCache.set(source, request);
     return request;
   }
 
@@ -502,7 +563,7 @@
     const version = ++state.version;
 
     try {
-      const translated = await translateText(source);
+      const translated = await translateReviewText(source);
       if (!element.isConnected || state.version !== version || normalize(element.innerText) !== visibleText) return;
       element.innerHTML = renderMarkedTranslation(translated, markerCount);
       state.translated = normalize(element.innerText);

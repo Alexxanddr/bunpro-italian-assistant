@@ -1,10 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Bunpro Italian Assistant",
-  "version": "1.0.15",
-  "description": "Aggiunge traduzioni italiane a Learn e Review su Bunpro usando la Translator API locale di Chrome.",
+  "version": "1.1.0",
+  "description": "Aggiunge traduzioni italiane alle schermate Learn e Review di Bunpro.",
   "permissions": ["storage"],
-  "host_permissions": ["https://bunpro.jp/*", "https://www.bunpro.jp/*"],
+  "host_permissions": [
+    "https://bunpro.jp/*",
+    "https://www.bunpro.jp/*",
+    "https://api.mymemory.translated.net/*"
+  ],
   "content_scripts": [
     {
       "matches": ["https://bunpro.jp/*", "https://www.bunpro.jp/*"],

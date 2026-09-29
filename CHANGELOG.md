@@ -4,6 +4,13 @@ Il formato segue [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) e il p
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-29
+
+### Changed
+
+- Le frasi Review vengono tradotte tramite il servizio gratuito MyMemory, con cache, timeout e tentativi automatici.
+- Le traduzioni Learn continuano a usare la Translator API locale di Chrome.
+
 ## [1.0.15] - 2026-09-29
 
 ### Fixed
